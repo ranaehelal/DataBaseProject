@@ -1,6 +1,6 @@
 # University Library Management System
 
-Welcome to the University Library Management System repository. This project is designed to manage a university library, allowing users (students and admins) to sign up, borrow books, and update their details. Admins can add books, update book information, and manage book orders.
+Welcome to the University Library Management System repository. This project is designed to manage a university library, allowing users (students and admins) to sign up, borrow books, and update their details , search for book . Admins can add books, update book information, and manage book orders.
 
 ## Table of Contents
 - [Project Description](#project-description)
