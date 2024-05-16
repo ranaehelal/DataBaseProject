@@ -47,12 +47,10 @@ CREATE TABLE Book (
     Publisher VARCHAR(100),
     Edition VARCHAR(50),
 	Author_ID INT ,
-	Admin_ID INT ,
 	-- Relationship between Book and Author
 	 FOREIGN KEY (Author_ID) REFERENCES Author(Author_ID),
 	-- Relationship between Book and Admin
-	 FOREIGN KEY (Admin_ID) REFERENCES Admin(Admin_ID)
-
+	
 
 
 );
