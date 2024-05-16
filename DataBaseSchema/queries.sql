@@ -5,14 +5,12 @@ SELECT
     b.Book_Price,
     b.Publication_Year,
     b.ISBN,
-    a.[Name] AS Author_Name,
-    adm.Username AS Admin_Username
+    a.[Name] AS Author_Name
 FROM 
     Book b
 LEFT JOIN 
     Author a ON b.Author_ID = a.Author_ID
-LEFT JOIN 
-    [Admin] adm ON b.Admin_ID = adm.Admin_ID;
+
 
 --Retrieve Student Information
 SELECT 
