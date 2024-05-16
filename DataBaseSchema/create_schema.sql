@@ -67,14 +67,9 @@ CREATE TABLE Student (
     [Password] VARCHAR(50)NOT NULL,
     Email VARCHAR(100) unique NOT NULL,
     [Address] VARCHAR(200) ,
-);
--- PhoneNumber Table
-CREATE TABLE PhoneNumber (
-    Student_ID INT,
-	Phone_ID INT,
-    PhoneNumber VARCHAR(20),
-    PRIMARY KEY ( Phone_ID),
-    FOREIGN KEY (Student_ID) REFERENCES Student(Student_ID)
+	PhoneNumber VARCHAR(20)
+
+	
 );
 
 -- Order Table
