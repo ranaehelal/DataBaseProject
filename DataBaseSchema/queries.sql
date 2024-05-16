@@ -22,11 +22,9 @@ SELECT
     s.UserName,
     s.Email,
     s.[Address],
-    pn.PhoneNumber
+    s.PhoneNumber
 FROM 
     Student s
-LEFT JOIN 
-    PhoneNumber pn ON s.Student_ID = pn.Student_ID;
 --Retrieve Book Orders
 SELECT 
     o.Order_ID,
@@ -54,3 +52,13 @@ LEFT JOIN
     Book b ON a.Author_ID = b.Author_ID
 GROUP BY 
     a.[Name];
+
+	-- Retrieve Admin Information
+SELECT 
+    Admin_ID,
+    FName,
+    LName,
+    Username,
+    Email
+FROM 
+    Admin;
