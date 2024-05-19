@@ -372,15 +372,15 @@ def execute_search_query(query):
     except Exception as e:
         print(f"Error executing search query: {e}")
         return None
-def delete_student(student_id):
+def delete_student(username):
     try:
         connection = connect_to_database()
         if connection:
             cursor = connection.cursor()
-            cursor.execute(f"SELECT * FROM Student WHERE Student_ID = '{student_id}'")
+            cursor.execute(f"SELECT * FROM Student WHERE username = '{username}'")
             student = cursor.fetchone()
             if student:
-                cursor.execute(f"DELETE FROM Student WHERE Student_ID = '{student_id}'")
+                cursor.execute(f"DELETE FROM Student WHERE username = '{username}'")
                 connection.commit()
                 return True
             else:
@@ -391,6 +391,7 @@ def delete_student(student_id):
         if connection:
             connection.close()
     return False
+
 class LibraryApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -936,20 +937,19 @@ class DeleteStudentPage(ctk.CTkFrame):
         ctk.CTkLabel(self, text='Delete Student', font=('Arial', 18)).pack(pady=10)
         frame_delete_student = ctk.CTkFrame(self)
         frame_delete_student.pack(pady=10)
-        ctk.CTkLabel(frame_delete_student, text='Student ID').grid(row=0, column=0)
-        self.entry_student_id = ctk.CTkEntry(frame_delete_student)
-        self.entry_student_id.grid(row=0, column=1)
+        ctk.CTkLabel(frame_delete_student, text='Student username').grid(row=0, column=0)
+        self.entry_username = ctk.CTkEntry(frame_delete_student)
+        self.entry_username.grid(row=0, column=1)
         ctk.CTkButton(frame_delete_student, text='Delete Student', command=self.submit_delete_student).grid(row=1, columnspan=2, pady=10)
         ctk.CTkButton(frame_delete_student, text='Back', command=lambda: controller.show_frame('AdminPage')).grid(row=2, columnspan=2, pady=10)
 
     def submit_delete_student(self):
-        student_id = self.entry_student_id.get()
+        username = self.entry_username.get()
         # Call the delete_student function passing the student_id
-        if delete_student(student_id):
+        if delete_student(username):
             messagebox.showinfo('Delete Student', 'Student deleted successfully!')
         else:
             messagebox.showerror('Error', 'Failed to delete student. Please try again.')
-
 
 
 if __name__ == '__main__':
