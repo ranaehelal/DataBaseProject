@@ -120,6 +120,13 @@ def return_book(username, book_id, return_date):
             Availability = CASE WHEN No_copies + 1 > 0 THEN 1 ELSE Availability END
         WHERE Book_ID = ?
     """
+    check_borrow_query = """
+        SELECT o.Order_ID
+        FROM [Order] o
+        JOIN BookOrder bo ON o.Order_ID = bo.Order_ID
+        JOIN Student s ON o.Student_ID = s.Student_ID
+        WHERE s.UserName = ? AND bo.Book_ID = ? AND o.Return_Date IS NULL
+    """
     try:
         connection = connect_to_database()
         if connection:
@@ -131,6 +138,14 @@ def return_book(username, book_id, return_date):
 
             if student_id is None:
                 print("Error: Student with the provided username does not exist.")
+                return False
+
+            # Check if the student has borrowed this book and hasn't returned it
+            cursor.execute(check_borrow_query, (username, book_id))
+            order_row = cursor.fetchone()
+
+            if order_row is None:
+                print("Error: This student did not borrow this book or the book has already been returned.")
                 return False
 
             # Execute the update order query
