@@ -4,7 +4,7 @@ import pyodbc
 import tkinter as tk
 from tkinter import messagebox
 import datetime
-server = 'DESKTOP-3RH0K56\\MSSQLSERVER02'  ## YOU MUST PUT YOUR SERVER NAME --> You will find it at the begin of SSMS in server name or in the first line in Object Explorer
+server = 'DESKTOP-GLJLREN\\MSSQLSERVER01'  ## YOU MUST PUT YOUR SERVER NAME --> You will find it at the begin of SSMS in server name or in the first line in Object Explorer
 database = 'UniversityLibrary'             ##Database name DO NOT change it
 driver = 'ODBC Driver 17 for SQL Server'   ## ODBC (Open Database Connectivity) driver to be used for connecting to the SQL Server database + driver version + SQL server
 connection_string = f'DRIVER={driver};SERVER={server};DATABASE={database};Trusted_Connection=yes'
@@ -87,7 +87,7 @@ def delete_book(book_id):
     execute_query(query)
 
 def return_book(username, book_id, return_date):
-    update_query = """
+    update_order_query = """
         UPDATE [Order]
         SET Return_Date = ?
         WHERE Order_ID IN (
@@ -99,7 +99,7 @@ def return_book(username, book_id, return_date):
         )
         AND Return_Date IS NULL
     """
-    delete_query = """
+    delete_book_order_query = """
         DELETE FROM BookOrder
         WHERE Order_ID IN (
             SELECT o.Order_ID
@@ -116,7 +116,8 @@ def return_book(username, book_id, return_date):
     """
     update_book_query = """
         UPDATE Book
-        SET Availability = 1
+        SET No_copies = No_copies + 1,
+            Availability = CASE WHEN No_copies + 1 > 0 THEN 1 ELSE Availability END
         WHERE Book_ID = ?
     """
     try:
@@ -132,18 +133,22 @@ def return_book(username, book_id, return_date):
                 print("Error: Student with the provided username does not exist.")
                 return False
 
-            # Execute the update query
-            cursor.execute(update_query, (return_date, username, book_id))
-            # Execute the delete query
-            cursor.execute(delete_query, (username, book_id))
+            # Execute the update order query
+            cursor.execute(update_order_query, (return_date, username, book_id))
+
+            # Execute the delete book order query
+            cursor.execute(delete_book_order_query, (username, book_id))
+
             # Execute the update book availability query
             cursor.execute(update_book_query, (book_id,))
+
             connection.commit()  # Commit changes to the database
             connection.close()
             return True
     except Exception as e:
         print(f'Error returning book: {e}')
         return False
+
 
 def display_books():
     query = """
@@ -226,11 +231,12 @@ def borrow_book(username, book_id):
         SELECT Student_ID FROM Student WHERE UserName = ?
     """
 
-    # First, update the book's availability
+    # First, update the book's number of copies and availability if needed
     update_book_query = """
         UPDATE Book
-        SET Availability = ?
-        WHERE Book_ID = ? AND Availability = ?
+        SET No_copies = No_copies - 1,
+            Availability = CASE WHEN No_copies - 1 = 0 THEN 0 ELSE Availability END
+        WHERE Book_ID = ? AND No_copies > 0
     """
 
     # Second, insert a new order into the Order table
@@ -259,10 +265,10 @@ def borrow_book(username, book_id):
             return False
 
         # Execute the update book query
-        cursor.execute(update_book_query, (0, book_id, 1))
+        cursor.execute(update_book_query, (book_id,))
 
         if cursor.rowcount > 0:
-            # Only proceed if the book availability was successfully updated
+            # Only proceed if the book's number of copies was successfully updated
 
             # Fetch the current maximum Order_ID and increment it by one
             cursor.execute("SELECT MAX(Order_ID) FROM [Order]")
@@ -279,11 +285,13 @@ def borrow_book(username, book_id):
             connection.close()
             return True
         else:
+            print("Error: The book is not available for borrowing.")
             connection.close()
             return False
     except Exception as e:
         print(f'Error borrowing book: {e}')
         return False
+
 def update_user_details(username, first_name=None, last_name=None, address=None, password=None):
     if not any([first_name, last_name, address, password]):
         print('No updates provided.')
@@ -349,6 +357,25 @@ def execute_search_query(query):
     except Exception as e:
         print(f"Error executing search query: {e}")
         return None
+def delete_student(student_id):
+    try:
+        connection = connect_to_database()
+        if connection:
+            cursor = connection.cursor()
+            cursor.execute(f"SELECT * FROM Student WHERE Student_ID = '{student_id}'")
+            student = cursor.fetchone()
+            if student:
+                cursor.execute(f"DELETE FROM Student WHERE Student_ID = '{student_id}'")
+                connection.commit()
+                return True
+            else:
+                print("Student does not exist.")
+    except Exception as e:
+        print(f"Error deleting student: {e}")
+    finally:
+        if connection:
+            connection.close()
+    return False
 class LibraryApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -374,25 +401,7 @@ class LibraryApp(ctk.CTk):
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
-def delete_student(student_id):
-    try:
-        connection = connect_to_database()
-        if connection:
-            cursor = connection.cursor()
-            cursor.execute(f"SELECT * FROM Student WHERE Student_ID = '{student_id}'")
-            student = cursor.fetchone()
-            if student:
-                cursor.execute(f"DELETE FROM Student WHERE Student_ID = '{student_id}'")
-                connection.commit()
-                return True
-            else:
-                print("Student does not exist.")
-    except Exception as e:
-        print(f"Error deleting student: {e}")
-    finally:
-        if connection:
-            connection.close()
-    return False
+
 
 class HomePage(ctk.CTkFrame):
     def __init__(self, parent, controller):
